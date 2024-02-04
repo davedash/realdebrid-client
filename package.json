@@ -1,0 +1,14 @@
+{
+  "name": "realdebrid-client",
+  "main": "dist/index.js",
+  "bin": {
+    "realdebrid-client": "./dist/index.js"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
