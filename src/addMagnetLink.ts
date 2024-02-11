@@ -35,8 +35,8 @@ const addMagnetToRealDebrid = async (
 		const info = await RD.torrents.info(response.id);
 		debug("Info response", info.files);
 
-		const movieFiles = (info.files as File[]).filter((file) =>
-			file.path.endsWith(".mp4"),
+		const movieFiles = (info.files as File[]).filter(
+			(file) => file.path.endsWith(".mp4") || file.path.endsWith(".mkv"),
 		);
 		const movieFileIds = movieFiles.map((file) => file.id);
 
