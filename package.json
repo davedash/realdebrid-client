@@ -13,12 +13,17 @@
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
+
+  "scripts": {
+    "build": "docker build -t magnet-processor ."
+  },
   "dependencies": {
     "axios": "^1.6.7",
     "chalk": "^5.3.0",
     "cli-progress": "^3.12.0",
     "commander": "^12.0.0",
     "debug": "^4.3.4",
-    "enquirer": "^2.4.1"
+    "enquirer": "^2.4.1",
+    "node-real-debrid": "^1.0.6"
   }
 }

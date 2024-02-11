@@ -15,27 +15,40 @@ export const addMagnetLink = async (magnetFile: string, types: string) => {
 	// const filteredFiles = filterFilesByType(files, types);
 };
 
+import RDC from "node-real-debrid";
+
+type File = {
+	id: number;
+	path: string;
+};
 const addMagnetToRealDebrid = async (
 	credentials: CredentialFileData,
 	magnetUrl: string,
 ) => {
 	try {
 		const tokens = await getTokens(credentials);
-		const response = await axios.post(
-			"https://api.real-debrid.com/rest/1.0/torrents/addMagnet",
-			{
-				magnet: magnetUrl,
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${tokens.access_token}`,
-				},
-			},
+		const RD = new RDC(tokens.access_token);
+		const response = await RD.torrents.addMagnet(magnetUrl);
+
+		debug("Magnet response", response);
+
+		const info = await RD.torrents.info(response.id);
+		debug("Info response", info.files);
+
+		const movieFiles = (info.files as File[]).filter((file) =>
+			file.path.endsWith(".mp4"),
 		);
-		debug("Magnet response", response.data);
-		return response.data; // This should include information about the added torrent
+		const movieFileIds = movieFiles.map((file) => file.id);
+
+		const select = await RD.torrents.selectFiles(
+			response.id,
+			movieFileIds.join(","),
+		);
+		return select; // This should include information about the added torrent
 	} catch (error) {
-		console.error("Error adding magnet to Real Debrid:", error);
+		// @ts-expect-error
+		console.error("Error adding magnet to Real Debrid:", error.message);
+		debug({ error });
 		throw error;
 	}
 };
@@ -58,23 +71,30 @@ async function getTokens({
 	try {
 		const response = await axios.post(
 			"https://api.real-debrid.com/oauth/v2/token",
-			null,
 			{
-				params: {
-					client_id: clientId,
-					client_secret: clientSecret,
-					code: deviceCode,
-					grant_type: "http://oauth.net/grant_type/device/1.0",
-				},
+				client_id: clientId,
+				client_secret: clientSecret,
+				code: deviceCode,
+				grant_type: "http://oauth.net/grant_type/device/1.0",
+			},
+			{
 				headers: {
 					"Content-Type": "application/x-www-form-urlencoded",
 				},
 			},
 		);
+		debug("Tokens:", response.data);
 
 		return response.data;
 	} catch (error) {
-		console.error("Error retrieving tokens:", error);
+		// @ts-expect-error
+		if (error.response) {
+			// @ts-expect-error
+			console.log(error.response.data);
+		}
+
+		// @ts-expect-error
+		console.error("Error retrieving tokens:", error.message);
 		throw error;
 	}
 }
